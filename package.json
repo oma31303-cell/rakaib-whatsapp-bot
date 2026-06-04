@@ -2,11 +2,13 @@
   "name": "rakaib-bot",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": { "start": "node index.js" },
+  "scripts": {
+    "start": "node index.js",
+    "postinstall": "node node_modules/puppeteer/install.js"
+  },
   "dependencies": {
     "whatsapp-web.js": "latest",
     "qrcode-terminal": "latest",
-    "puppeteer-core": "latest"
+    "puppeteer": "latest"
   }
 }
-
