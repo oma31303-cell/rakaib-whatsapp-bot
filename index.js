@@ -5,14 +5,7 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        args: [
-            '--no-sandbox', 
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--no-zygote',
-            '--single-process',
-            '--disable-gpu'
-        ]
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
 });
 
@@ -22,6 +15,6 @@ client.on('disconnected', (reason) => { console.log('انفصل البوت:', re
 
 client.initialize();
 
-// تكة الأمان عشان ما يطفي
+// حلقة انتظار عشان ما يطفي السيرفر
 setInterval(() => { console.log("البوت صاحي ومستمر يا مولاي..."); }, 30000);
 
