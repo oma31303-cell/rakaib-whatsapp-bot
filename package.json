@@ -1,13 +1,16 @@
 {
   "name": "rakaib-whatsapp-bot",
   "version": "1.0.0",
+  "description": "WhatsApp bot for Rakaib",
   "main": "index.js",
-  "dependencies": {
-    "whatsapp-web.js": "^1.23.0",
-    "@supabase/supabase-js": "^2.39.0",
-    "qrcode-terminal": "^0.12.0"
-  },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "postinstall": "npx puppeteer install chrome"
+  },
+  "dependencies": {
+    "whatsapp-web.js": "^1.23.1",
+    "qrcode-terminal": "^0.12.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "puppeteer": "^21.0.0"
   }
 }
