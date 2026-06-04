@@ -6,6 +6,7 @@
   "dependencies": {
     "whatsapp-web.js": "latest",
     "qrcode-terminal": "latest",
-    "puppeteer": "latest"
+    "puppeteer-core": "latest"
   }
 }
+
