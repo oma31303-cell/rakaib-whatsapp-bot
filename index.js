@@ -5,12 +5,21 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu']
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu'
+        ]
     }
 });
 
-client.on('qr', (qr) => { qrcode.generate(qr, { small: true }); });
-client.on('ready', () => { console.log('البوت صاحي يا مولاي!'); });
+client.on('qr', (qr) => {
+    qrcode.generate(qr, { small: true });
+});
+
+client.on('ready', () => {
+    console.log('البوت صاحي يا مولاي!');
+});
 
 client.initialize();
-
