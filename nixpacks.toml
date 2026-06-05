@@ -1,2 +1,5 @@
 [phases.setup]
-nixPkgs = ["google-chrome", "chromium"]
+nixPkgs = ["chromium", "glib", "nss", "atk", "cups", "libdrm", "libxkbcommon", "libxcomposite", "libxdamage", "libxrandr", "libgbm", "pango", "cairo"]
+
+[start]
+cmd = "node index.js"
