@@ -1,24 +1,29 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
+const qrcode = require('qrcode');
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
 
 const client = new Client({
-    authStrategy: new LocalAuth(),
+    authStrategy: new LocalAuth(), // خلها فاضية كذا وهو بيدبر نفسه
     puppeteer: {
         headless: true,
-        args: ['--no-sandbox'],
-        // هنا السر: نخليه يتنكر كمتصفح كروم حقيقي على ويندوز
-        executablePath: '/usr/bin/google-chrome',
-        userDataDir: './.wwebjs_auth'
-    },
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    }
 });
+
+let latestQr = '';
 
 client.on('qr', (qr) => {
-    // هذا بيطلع الكود بشكل أوضح في التيرمينال
-    require('qrcode-terminal').generate(qr, {small: true});
+    latestQr = qr;
 });
 
-client.on('ready', () => {
-    console.log('البوت شغال يا مولاي!');
+app.get('/qr', async (req, res) => {
+    if (!latestQr) return res.send('جاري التحضير يا مولاي، انتظر ثواني وأعد تحميل الصفحة...');
+    const url = await qrcode.toDataURL(latestQr);
+    res.send(`<img src="${url}" />`);
 });
 
+client.on('ready', () => console.log('تم الربط يا مولاي!'));
 client.initialize();
+app.listen(port, () => console.log(`الرابط جاهز على بورت ${port}`));
