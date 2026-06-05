@@ -1,110 +1,79 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+const { Boom } = require('@hapi/boom');
 const express = require('express');
-const { execSync } = require('child_process');
+const qrcode = require('qrcode');
 const app = express();
 const port = process.env.PORT || 8080;
 
 app.use(express.json());
 
-// يبحث عن Chromium تلقائياً
-function findChromium() {
-  const paths = [
-    '/usr/bin/chromium',
-    '/usr/bin/chromium-browser',
-    '/usr/bin/google-chrome',
-    '/usr/bin/google-chrome-stable',
-    '/snap/bin/chromium',
-  ];
-  for (const p of paths) {
-    try {
-      execSync('test -f ' + p);
-      return p;
-    } catch (e) {}
-  }
-  try {
-    return execSync('which chromium || which chromium-browser || which google-chrome', { encoding: 'utf8' }).trim();
-  } catch (e) {}
-  return null;
-}
-
-const chromiumPath = process.env.PUPPETEER_EXECUTABLE_PATH || findChromium();
-console.log('Chromium path: ' + chromiumPath);
-
-const client = new Client({
-  authStrategy: new LocalAuth(),
-  puppeteer: {
-    headless: true,
-    executablePath: chromiumPath,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--single-process',
-      '--no-zygote',
-    ],
-  },
-});
-
+let sock = null;
 let isReady = false;
 let latestQr = '';
 
-client.on('qr', (qr) => {
-  latestQr = qr;
-  console.log('QR جاهز — افتح /qr في المتصفح');
-});
+async function connect() {
+  const { state, saveCreds } = await useMultiFileAuthState('auth_info');
 
-client.on('ready', () => {
-  isReady = true;
-  latestQr = '';
-  console.log('متصل بواتساب!');
-});
+  sock = makeWASocket({
+    auth: state,
+    printQRInTerminal: false,
+    browser: ['Rakaib Farm', 'Chrome', '1.0.0'],
+  });
 
-client.on('disconnected', () => {
-  isReady = false;
-  console.log('انقطع الاتصال — جاري إعادة التشغيل...');
-  client.initialize();
+  sock.ev.on('creds.update', saveCreds);
+
+  sock.ev.on('connection.update', ({ connection, lastDisconnect, qr }) => {
+    if (qr) {
+      latestQr = qr;
+      console.log('QR جاهز — افتح /qr');
+    }
+    if (connection === 'open') {
+      isReady = true;
+      latestQr = '';
+      console.log('متصل بواتساب!');
+    }
+    if (connection === 'close') {
+      isReady = false;
+      const code = new Boom(lastDisconnect?.error)?.output?.statusCode;
+      if (code !== DisconnectReason.loggedOut) {
+        console.log('إعادة الاتصال...');
+        setTimeout(connect, 5000);
+      } else {
+        console.log('تم تسجيل الخروج — احذف مجلد auth_info');
+      }
+    }
+  });
+}
+
+app.get('/', (req, res) => {
+  res.json({ status: isReady ? 'online' : 'offline', service: 'Rakaib WhatsApp Bridge', qr_pending: !!latestQr });
 });
 
 app.get('/qr', async (req, res) => {
-  if (isReady) return res.send('<h2 style="font-family:sans-serif;color:green">متصل بواتساب بنجاح!</h2>');
-  if (!latestQr) return res.send('<h2 style="font-family:sans-serif">جاري التحضير... حدث الصفحة بعد 15 ثانية</h2>');
+  if (isReady) return res.send('<h2 style="font-family:sans-serif;color:green;text-align:center;padding:40px">متصل بواتساب بنجاح!</h2>');
+  if (!latestQr) return res.send('<h2 style="font-family:sans-serif;text-align:center;padding:40px">جاري التحضير... حدث الصفحة بعد 15 ثانية</h2><script>setTimeout(()=>location.reload(),15000)</script>');
   const url = await qrcode.toDataURL(latestQr);
-  res.send('<html dir="rtl"><body style="font-family:sans-serif;text-align:center;padding:40px;background:#0f0f0f;color:white"><h2>امسح الكود بواتساب</h2><p style="color:#aaa">واتساب - النقاط الثلاث - الاجهزة المرتبطة - ربط جهاز</p><img src="' + url + '" style="width:300px;height:300px;border-radius:12px" /><p style="color:#666;font-size:14px">بعد المسح حدث الصفحة للتاكد</p><script>setTimeout(function(){location.reload()},30000)</script></body></html>');
-});
-
-app.get('/', (req, res) => {
-  res.json({
-    status: isReady ? 'online' : 'offline',
-    service: 'Rakaib WhatsApp Bridge',
-    qr_pending: !!latestQr,
-  });
+  res.send('<html dir="rtl"><body style="font-family:sans-serif;text-align:center;padding:40px;background:#111;color:white"><h2>امسح الكود بواتساب</h2><p style="color:#aaa">واتساب - النقاط الثلاث - الاجهزة المرتبطة - ربط جهاز</p><img src="' + url + '" style="width:280px;height:280px;border-radius:12px"/><p style="color:#555;font-size:13px">بعد المسح حدث الصفحة</p><script>setTimeout(()=>location.reload(),30000)</script></body></html>');
 });
 
 app.post('/send', async (req, res) => {
   const { phone, message } = req.body;
-  if (!phone || !message) {
-    return res.status(400).json({ ok: false, error: 'مطلوب phone و message' });
-  }
-  if (!isReady) {
-    return res.status(503).json({ ok: false, error: 'واتساب غير متصل بعد' });
-  }
+  if (!phone || !message) return res.status(400).json({ ok: false, error: 'مطلوب phone و message' });
+  if (!isReady) return res.status(503).json({ ok: false, error: 'واتساب غير متصل بعد' });
   try {
     let cleaned = phone.replace(/[^\d]/g, '');
     if (cleaned.startsWith('05')) cleaned = '966' + cleaned.slice(1);
     else if (cleaned.startsWith('5')) cleaned = '966' + cleaned;
-    const jid = cleaned + '@c.us';
-    await client.sendMessage(jid, message);
+    await sock.sendMessage(cleaned + '@s.whatsapp.net', { text: message });
     console.log('ارسلت ل ' + cleaned);
     res.json({ ok: true, id: 'msg-' + Date.now() });
   } catch (err) {
-    console.error('فشل الارسال: ' + err.message);
+    console.error('فشل: ' + err.message);
     res.status(500).json({ ok: false, error: err.message });
   }
 });
 
 app.listen(port, () => {
-  console.log('جسر ركايب يعمل على البورت ' + port);
-  client.initialize();
+  console.log('جسر ركايب على البورت ' + port);
+  connect();
 });
