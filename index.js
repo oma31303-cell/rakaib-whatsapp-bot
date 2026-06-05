@@ -1,16 +1,41 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const express = require('express');
+const { execSync } = require('child_process');
 const app = express();
 const port = process.env.PORT || 8080;
 
 app.use(express.json());
 
+// يبحث عن Chromium تلقائياً
+function findChromium() {
+  const paths = [
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/google-chrome',
+    '/usr/bin/google-chrome-stable',
+    '/snap/bin/chromium',
+  ];
+  for (const p of paths) {
+    try {
+      execSync('test -f ' + p);
+      return p;
+    } catch (e) {}
+  }
+  try {
+    return execSync('which chromium || which chromium-browser || which google-chrome', { encoding: 'utf8' }).trim();
+  } catch (e) {}
+  return null;
+}
+
+const chromiumPath = process.env.PUPPETEER_EXECUTABLE_PATH || findChromium();
+console.log('Chromium path: ' + chromiumPath);
+
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
     headless: true,
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/run/current-system/sw/bin/chromium',
+    executablePath: chromiumPath,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
