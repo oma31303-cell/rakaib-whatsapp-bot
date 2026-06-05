@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["chromium"]
+nixPkgs = ["chromium", "glib", "nss", "atk", "cups", "libdrm", "libxkbcommon", "libxcomposite", "libxdamage", "libxrandr", "libgbm", "pango", "cairo"]
 
 [start]
-cmd = "node index.js"
+cmd = "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true node index.js"
