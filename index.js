@@ -1,25 +1,21 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
 
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        headless: true,
-        args: [
-            '--no-sandbox', 
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-gpu'
-        ]
+        executablePath: process.env.CHROME_BIN || '/usr/bin/google-chrome',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
     }
 });
 
 client.on('qr', (qr) => {
-    qrcode.generate(qr, { small: true });
+    // هذا السطر بيعطيك رابط مباشر للصورة، اضغط عليه وبيفتح الـ QR بوضوح
+    console.log('QR RECEIVED - COPY THIS LINK TO BROWSER:');
+    console.log('https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(qr));
 });
 
 client.on('ready', () => {
-    console.log('البوت صاحي يا مولاي!');
+    console.log('البوت شغال يا مولاي!');
 });
 
 client.initialize();
