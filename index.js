@@ -16,11 +16,12 @@ let latestQr = '';
 client.on('qr', (qr) => { latestQr = qr; });
 
 app.get('/qr', async (req, res) => {
-    if (!latestQr) return res.send('جاري التحضير يا مولاي.. انتظر ثواني وحدث الصفحة.');
+    if (!latestQr) return res.send('جاري التحضير يا مولاي..');
     const url = await qrcode.toDataURL(latestQr);
     res.send(`<img src="${url}" />`);
 });
 
-client.on('ready', () => console.log('تم الربط يا مولاي!'));
+client.on('ready', () => console.log('تم الربط!'));
 client.initialize();
 app.listen(port, () => console.log(`الرابط شغال على بورت ${port}`));
+
