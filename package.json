@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable node index.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "whatsapp-web.js": "latest",
