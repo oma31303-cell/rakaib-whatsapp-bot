@@ -9,11 +9,12 @@ const client = new Client({
 });
 
 client.on('qr', (qr) => {
-    console.log('QR CODE LINK: https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(qr));
+    // هذي المرة بنطبع الـ QR في الكونسول مباشرة، جرب تصوره من بعيد بدون روابط
+    require('qrcode-terminal').generate(qr, {small: true});
 });
 
 client.on('ready', () => {
-    console.log('البوت شغال يا مولاي!');
+    console.log('تم الربط بنجاح يا مولاي!');
 });
 
 client.initialize();
