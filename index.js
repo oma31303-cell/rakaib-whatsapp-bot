@@ -8,6 +8,7 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
+        executablePath: '/usr/bin/chromium-browser', // جرب هذا المسار
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
     }
 });
@@ -21,7 +22,6 @@ app.get('/qr', async (req, res) => {
     res.send(`<img src="${url}" />`);
 });
 
-client.on('ready', () => console.log('تم الربط!'));
+client.on('ready', () => console.log('تم الربط يا مولاي!'));
 client.initialize();
-app.listen(port, () => console.log(`الرابط شغال على بورت ${port}`));
-
+app.listen(port, () => console.log(`شغال على بورت ${port}`));
