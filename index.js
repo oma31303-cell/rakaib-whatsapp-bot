@@ -4,8 +4,14 @@ const express = require('express');
 const cors = require('cors');
 const qrcode = require('qrcode');
 const fs = require('fs');
+const { uploadAuthInfo, downloadAuthInfo, LOCAL_DIR } = require('./whatsapp-auth-storage');
+
 const app = express();
 const port = process.env.PORT || 8080;
+
+app.use(cors());
+app.options('*', cors());
+app.use(express.json());
 
 // مسح الجلسة القديمة لو المتغير موجود
 if (process.env.CLEAR_AUTH) {
@@ -15,16 +21,15 @@ if (process.env.CLEAR_AUTH) {
   }
 }
 
-app.use(cors());
-app.options('*', cors());
-app.use(express.json());
-
 let sock = null;
 let isReady = false;
 let latestQr = '';
 
 async function connect() {
-  const { state, saveCreds } = await useMultiFileAuthState('auth_info');
+  // استعادة الجلسة من Supabase عند كل تشغيل
+  try { await downloadAuthInfo(); } catch (e) { console.warn('restore skipped:', e.message); }
+
+  const { state, saveCreds } = await useMultiFileAuthState(LOCAL_DIR);
 
   sock = makeWASocket({
     auth: state,
@@ -32,7 +37,11 @@ async function connect() {
     browser: ['Rakaib Farm', 'Chrome', '1.0.0'],
   });
 
-  sock.ev.on('creds.update', saveCreds);
+  sock.ev.on('creds.update', async () => {
+    await saveCreds();
+    // رفع الجلسة لـ Supabase عند كل تحديث
+    try { await uploadAuthInfo(); } catch (e) { console.error('backup failed:', e.message); }
+  });
 
   sock.ev.on('connection.update', ({ connection, lastDisconnect, qr }) => {
     if (qr) {
@@ -51,7 +60,8 @@ async function connect() {
         console.log('إعادة الاتصال...');
         setTimeout(connect, 5000);
       } else {
-        console.log('تم تسجيل الخروج — احذف مجلد auth_info');
+        console.log('تم تسجيل الخروج');
+        setTimeout(connect, 3000);
       }
     }
   });
