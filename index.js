@@ -2,12 +2,13 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 
 const client = new Client({
-    authStrategy: new LocalAuth(), // خلها فاضية كذا وهو بيدبر نفسه
+    authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
+        executablePath: '/usr/bin/chromium',
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
 });
