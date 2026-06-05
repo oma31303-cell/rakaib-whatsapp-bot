@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["google-chrome-stable", "glib", "nss", "atk", "cups", "libdrm", "libxkbcommon", "libxcomposite", "libxdamage", "libxrandr", "libgbm", "pango", "cairo"]
+
+[start]
+cmd = "PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable node index.js"
