@@ -3,8 +3,17 @@ const { Boom } = require('@hapi/boom');
 const express = require('express');
 const cors = require('cors');
 const qrcode = require('qrcode');
+const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 8080;
+
+// مسح الجلسة القديمة لو المتغير موجود
+if (process.env.CLEAR_AUTH) {
+  if (fs.existsSync('auth_info')) {
+    fs.rmSync('auth_info', { recursive: true });
+    console.log('تم مسح الجلسة القديمة');
+  }
+}
 
 app.use(cors());
 app.options('*', cors());
