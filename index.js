@@ -8,8 +8,7 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        executablePath: '/usr/bin/chromium', // هذا يحدد المسار المضمون للنظام
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu']
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
     }
 });
 
@@ -17,11 +16,11 @@ let latestQr = '';
 client.on('qr', (qr) => { latestQr = qr; });
 
 app.get('/qr', async (req, res) => {
-    if (!latestQr) return res.send('جاري التحضير يا مولاي، انتظر ثواني...');
+    if (!latestQr) return res.send('جاري التحضير يا مولاي..');
     const url = await qrcode.toDataURL(latestQr);
     res.send(`<img src="${url}" />`);
 });
 
-client.on('ready', () => console.log('تم الربط يا مولاي!'));
+client.on('ready', () => console.log('تم الربط!'));
 client.initialize();
-app.listen(port, () => console.log(`الرابط جاهز على بورت ${port}`));
+app.listen(port, () => console.log(`شغال على بورت ${port}`));
