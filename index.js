@@ -8,18 +8,16 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        executablePath: '/usr/bin/chromium', // هذا يحدد المسار المضمون للنظام
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu']
     }
 });
 
 let latestQr = '';
-
-client.on('qr', (qr) => {
-    latestQr = qr;
-});
+client.on('qr', (qr) => { latestQr = qr; });
 
 app.get('/qr', async (req, res) => {
-    if (!latestQr) return res.send('جاري التحضير يا مولاي، انتظر ثواني وأعد تحميل الصفحة...');
+    if (!latestQr) return res.send('جاري التحضير يا مولاي، انتظر ثواني...');
     const url = await qrcode.toDataURL(latestQr);
     res.send(`<img src="${url}" />`);
 });
