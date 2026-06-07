@@ -26,7 +26,7 @@ app.post('/send', async (req, res) => {
     else if (cleaned.startsWith('5')) cleaned = '966' + cleaned;
 
     const response = await fetch(
-      `https://7103.api.greenapi.com/waInstance${GREENAPI_INSTANCE}/sendMessage/${GREENAPI_TOKEN}`,
+      `https://7107.api.greenapi.com/waInstance${GREENAPI_INSTANCE}/sendMessage/${GREENAPI_TOKEN}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
