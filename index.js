@@ -32,7 +32,7 @@ app.post('/send', async (req, res) => {
           Authorization: `Bearer ${WAAPI_TOKEN}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ chatId: cleaned + '@c.us', message })
+        body: JSON.stringify({ chatId: cleaned + '@s.whatsapp.net', message })
       }
     );
 
