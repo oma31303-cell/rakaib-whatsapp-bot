@@ -37,8 +37,8 @@ app.post('/send', async (req, res) => {
       }
     );
 
-    const data = await response.json();
-    if (!response.ok) throw new Error(JSON.stringify(data));
+    const text = await response.text();
+    if (!response.ok) throw new Error(text || 'WaAPI error');
     console.log('ارسلت ل ' + cleaned);
     res.json({ ok: true });
   } catch (err) {
