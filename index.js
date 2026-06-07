@@ -11,6 +11,7 @@ const WAAPI_INSTANCE = process.env.WAAPI_INSTANCE;
 app.use(cors());
 app.options('*', cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
   res.json({ status: 'online', service: 'Rakaib WhatsApp Bridge' });
