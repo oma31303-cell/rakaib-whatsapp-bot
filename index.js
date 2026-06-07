@@ -5,8 +5,8 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 8080;
 
-const WAAPI_TOKEN = process.env.WAAPI_TOKEN;
-const WAAPI_INSTANCE = process.env.WAAPI_INSTANCE;
+const GREENAPI_INSTANCE = process.env.GREENAPI_INSTANCE;
+const GREENAPI_TOKEN = process.env.GREENAPI_TOKEN;
 
 app.use(cors());
 app.options('*', cors());
@@ -26,21 +26,20 @@ app.post('/send', async (req, res) => {
     else if (cleaned.startsWith('5')) cleaned = '966' + cleaned;
 
     const response = await fetch(
-      `https://waapi.app/api/v1/instances/${WAAPI_INSTANCE}/client/action/send-message`,
+      `https://7107.api.greenapi.com/waInstance${GREENAPI_INSTANCE}/sendMessage/${GREENAPI_TOKEN}`,
       {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${WAAPI_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ chatId: cleaned + '@c.us', message })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chatId: cleaned + '@c.us',
+          message: message
+        })
       }
     );
 
     const text = await response.text();
-    console.log('WaAPI status:', response.status);
-    console.log('WaAPI response:', text);
-    if (!response.ok) throw new Error(text || 'WaAPI error');
+    console.log('Green API response:', text);
+    if (!response.ok) throw new Error(text || 'Green API error');
     console.log('ارسلت ل ' + cleaned);
     res.json({ ok: true });
   } catch (err) {
